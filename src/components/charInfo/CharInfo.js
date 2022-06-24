@@ -18,7 +18,7 @@ class CharInfo extends Component {
     this.updateChar();
   }
 
-  componentDidUpdate(prevProps, prevState) {
+  componentDidUpdate(prevProps) {
     if (this.props.charId !== prevProps.charId) {
       this.updateChar();
     }
@@ -77,7 +77,6 @@ class CharInfo extends Component {
 
 const View = ({ char }) => {
   const { name, description, thumbnail, homepage, wiki, comics } = char;
-  const tenComics = comics.slice(0, 9);
   let imgStyle = { objectFit: 'cover' };
   if (
     thumbnail ===
@@ -106,7 +105,7 @@ const View = ({ char }) => {
       <div className='char__comics'>Comics:</div>
       <ul className='char__comics-list'>
         {comics.length > 0 ? null : 'There is no comics with this character'}
-        {tenComics.map((item, i) => {
+        {comics.map((item, i) => {
           return (
             <li key={i} className='char__comics-item'>
               {item.name}
