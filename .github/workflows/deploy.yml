@@ -39,6 +39,7 @@ jobs:
         working-directory: .
         env:
           PUBLIC_URL: /marvel/
+          REACT_APP_MARVEL_API_KEY: ${{ vars.MARVEL_PUBLIC_API_KEY }}
       - name: Prepare static artifact
         run: |
           mkdir -p _site

@@ -1,21 +1,40 @@
 class MarvelService {
-  _apiBase = 'https://gateway.marvel.com:443/v1/public/';
+  _apiBase = `${(process.env.REACT_APP_MARVEL_API_BASE_URL || 'https://gateway.marvel.com/v1/public/').replace(/\/+$/, '')}/`;
   _apiKey = process.env.REACT_APP_MARVEL_API_KEY;
   _baseOffset = 210;
 
   getResource = async (url) => {
-    if (!this._apiKey) {
+    if (!this._apiKey && !process.env.REACT_APP_MARVEL_API_BASE_URL) {
       throw new Error('Set REACT_APP_MARVEL_API_KEY to load character data.');
     }
     const requestUrl = new URL(url);
-    requestUrl.searchParams.set('apikey', this._apiKey);
-    const res = await fetch(requestUrl);
-
-    if (!res.ok) {
-      throw new Error(`Could not fetch ${url}, status: ${res.status}`);
+    if (this._apiKey) {
+      requestUrl.searchParams.set('apikey', this._apiKey);
     }
 
-    return await res.json();
+    let response;
+    try {
+      response = await fetch(requestUrl);
+    } catch {
+      throw new Error('Marvel API is unreachable. Check your connection and try again.');
+    }
+
+    let payload;
+    try {
+      payload = await response.json();
+    } catch {
+      throw new Error(`Marvel API returned an unreadable response (${response.status}).`);
+    }
+
+    if (!response.ok) {
+      throw new Error(payload.status || `Marvel API request failed (${response.status}).`);
+    }
+
+    if (!Array.isArray(payload?.data?.results)) {
+      throw new Error('Marvel API response is missing character data.');
+    }
+
+    return payload;
   };
 
   getAllCharacters = async (offset = this._baseOffset) => {
@@ -29,7 +48,20 @@ class MarvelService {
     const res = await this.getResource(
       `${this._apiBase}characters/${id}`
     );
-    return this._transformCharacter(res.data.results[0]);
+    const character = res.data.results[0];
+    if (!character) {
+      throw new Error(`Marvel API did not find character ${id}.`);
+    }
+    return this._transformCharacter(character);
+  };
+
+  getRandomCharacter = async () => {
+    const offset = Math.floor(Math.random() * 1500);
+    const characters = await this.getAllCharacters(offset);
+    if (characters.length === 0) {
+      throw new Error('Marvel API returned no characters for this request.');
+    }
+    return characters[Math.floor(Math.random() * characters.length)];
   };
 
   _transformCharacter = (char) => {
@@ -37,9 +69,11 @@ class MarvelService {
       id: char.id,
       name: char.name,
       description: char.description
-        ? `${char.description.slice(0, 210)}...`
+        ? `${char.description.slice(0, 210)}${char.description.length > 210 ? '…' : ''}`
         : 'There is no description for this character',
-      thumbnail: char.thumbnail.path + '.' + char.thumbnail.extension,
+      thumbnail: char.thumbnail?.path
+        ? `${char.thumbnail.path.replace(/^http:/, 'https:')}.${char.thumbnail.extension || 'jpg'}`
+        : '',
       homepage: char.urls?.find((item) => item.type === 'detail')?.url || '',
       wiki: char.urls?.find((item) => item.type === 'wiki')?.url || '',
       comics: char.comics?.items || [],

@@ -2,15 +2,15 @@ import { Component } from 'react';
 import PropTypes from 'prop-types';
 
 import Spinner from '../spinner/Spinner';
-import ErrorMessage from '../errorMessage/ErrorMessage';
 import MarvelService from '../../services/MarvelService';
+import CharacterImage from '../characterImage/CharacterImage';
 import './charList.scss';
 
 class CharList extends Component {
   state = {
     charList: [],
     loading: true,
-    error: false,
+    error: '',
     newItemLoading: false,
     offset: 210,
     charEnded: false,
@@ -31,9 +31,7 @@ class CharList extends Component {
   };
 
   onCharListLoading = () => {
-    this.setState({
-      newItemLoading: true,
-    });
+    this.setState({ newItemLoading: true, error: '' });
   };
 
   onCharListLoaded = (newCharList) => {
@@ -51,10 +49,11 @@ class CharList extends Component {
     }));
   };
 
-  onError = () => {
+  onError = (error) => {
     this.setState({
-      error: true,
+      error: error.message,
       loading: false,
+      newItemLoading: false,
     });
   };
 
@@ -101,7 +100,7 @@ class CharList extends Component {
             }
           }}
         >
-          <img src={item.thumbnail} alt={item.name} style={imgStyle} />
+          <CharacterImage src={item.thumbnail} alt={item.name} style={imgStyle} />
           <div className='char__name'>{item.name}</div>
         </li>
       );
@@ -116,9 +115,11 @@ class CharList extends Component {
 
     const items = this.renderItems(charList);
 
-    const errorMessage = error ? <ErrorMessage /> : null;
+    const errorMessage = error ? <p className='char__error' role='alert'>{error}</p> : null;
     const spinner = loading ? <Spinner /> : null;
-    const content = !(loading || error) ? items : null;
+    const content = !(loading || error)
+      ? charList.length > 0 ? items : <p role='status'>No characters were returned.</p>
+      : null;
 
     return (
       <div className='char__list'>

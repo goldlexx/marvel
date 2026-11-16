@@ -3,8 +3,8 @@ import PropTypes from 'prop-types';
 
 import MarvelService from '../../services/MarvelService';
 import Spinner from '../spinner/Spinner';
-import ErrorMessage from '../errorMessage/ErrorMessage';
 import Skeleton from '../skeleton/Skeleton';
+import CharacterImage from '../characterImage/CharacterImage';
 
 import './charInfo.scss';
 
@@ -12,7 +12,7 @@ class CharInfo extends Component {
   state = {
     char: null,
     loading: false,
-    error: false,
+    error: '',
   };
 
   marvelService = new MarvelService();
@@ -51,13 +51,14 @@ class CharInfo extends Component {
   onCharLoading = () => {
     this.setState({
       loading: true,
+      error: '',
     });
   };
 
-  onError = () => {
+  onError = (error) => {
     this.setState({
       loading: false,
-      error: true,
+      error: error.message,
     });
   };
 
@@ -65,7 +66,7 @@ class CharInfo extends Component {
     const { char, loading, error } = this.state;
 
     const skeleton = char || loading || error ? null : <Skeleton />;
-    const errorMessage = error ? <ErrorMessage /> : null;
+    const errorMessage = error ? <p className='char__error' role='alert'>{error}</p> : null;
     const spinner = loading ? <Spinner /> : null;
     const content = !(loading || error || !char) ? <View char={char} /> : null;
 
@@ -94,7 +95,7 @@ const View = ({ char }) => {
   return (
     <>
       <div className='char__basics'>
-        <img src={thumbnail} alt={name} style={imgStyle} />
+        <CharacterImage src={thumbnail} alt={name} style={imgStyle} />
         <div>
           <div className='char__info-name'>{name}</div>
           <div className='char__btns'>

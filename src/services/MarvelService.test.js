@@ -17,6 +17,7 @@ afterEach(() => {
   jest.restoreAllMocks();
   global.fetch = originalFetch;
   delete process.env.REACT_APP_MARVEL_API_KEY;
+  delete process.env.REACT_APP_MARVEL_API_BASE_URL;
 });
 
 test('requests characters with the configured key and transforms the result', async () => {
@@ -58,5 +59,48 @@ test('handles optional character fields and HTTP errors', async () => {
   ).toMatchObject({ homepage: '', wiki: '', comics: [] });
 
   global.fetch = jest.fn().mockResolvedValue({ ok: false, status: 503 });
-  await expect(service.getCharacter(7)).rejects.toThrow('status: 503');
+  await expect(service.getCharacter(7)).rejects.toThrow('unreadable response (503)');
+});
+
+test('normalizes insecure image URLs and reports empty character results', async () => {
+  process.env.REACT_APP_MARVEL_API_KEY = 'test-public-key';
+  const service = new MarvelService();
+  expect(service._transformCharacter({
+    ...character,
+    thumbnail: { path: 'http://images.example.com/hero', extension: 'png' },
+  }).thumbnail).toBe('https://images.example.com/hero.png');
+
+  global.fetch = jest.fn().mockResolvedValue({
+    ok: true,
+    json: async () => ({ data: { results: [] } }),
+  });
+  await expect(service.getCharacter(999)).rejects.toThrow('did not find character 999');
+});
+
+test('supports a configured proxy base URL without a browser API key', async () => {
+  process.env.REACT_APP_MARVEL_API_BASE_URL = 'https://proxy.example.com/v1/public/';
+  global.fetch = jest.fn().mockResolvedValue({
+    ok: true,
+    json: async () => ({ data: { results: [character] } }),
+  });
+
+  await new MarvelService().getCharacter(7);
+  expect(global.fetch.mock.calls[0][0].origin).toBe('https://proxy.example.com');
+});
+
+test('surfaces API error payloads and malformed responses', async () => {
+  process.env.REACT_APP_MARVEL_API_KEY = 'test-public-key';
+  const service = new MarvelService();
+  global.fetch = jest.fn().mockResolvedValue({
+    ok: false,
+    status: 403,
+    json: async () => ({ status: 'Invalid Referer' }),
+  });
+  await expect(service.getCharacter(7)).rejects.toThrow('Invalid Referer');
+
+  global.fetch = jest.fn().mockResolvedValue({
+    ok: true,
+    json: async () => ({ data: {} }),
+  });
+  await expect(service.getAllCharacters()).rejects.toThrow('missing character data');
 });

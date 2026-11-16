@@ -25,15 +25,17 @@ npm run build
 npm start
 ```
 
-Create a local `.env.local` file from `.env.example` and set your Marvel public API key before starting the app. The API key is required to load character data.
+Create a local `.env.local` file from `.env.example` and set your Marvel public API key before starting the app. The key must be authorized for the domain that serves the app in the Marvel developer account.
 
 ## API key configuration
 
-The API key is read from `REACT_APP_MARVEL_API_KEY`. Do not commit `.env.local` or put private credentials in client-side code; values embedded in a browser app are public to its users.
+The browser client reads a public key from `REACT_APP_MARVEL_API_KEY`. Any value included in a browser build is visible to its users, so never place a private credential there. For a server-side proxy, set `REACT_APP_MARVEL_API_BASE_URL` to a compatible endpoint and keep its private key in that server's secret store. The client accepts the Marvel public API response shape from that endpoint.
+
+For the GitHub Pages workflow, configure the repository Actions variable `MARVEL_PUBLIC_API_KEY`. The workflow maps it to `REACT_APP_MARVEL_API_KEY` only during the build; it is not stored in the source tree.
 
 ## Demo status
 
-[Open the GitHub Pages demo](https://goldlexx.github.io/marvel/). The page responded during verification, but character data did not load, so the live API-backed features could not be confirmed. No screenshot is included because the captured page showed the unavailable-data state.
+[Open the GitHub Pages demo](https://goldlexx.github.io/marvel/). The app displays a configuration message when no public key or proxy URL is present. Character data still depends on an authorized key and the availability of the Marvel API.
 
 ## Verification
 

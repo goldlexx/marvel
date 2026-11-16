@@ -1,6 +1,10 @@
 @import '../../style/variables.scss';
 
 .char {
+    &__error {
+        color: #a11919;
+        line-height: 1.5;
+    }
     &__content {
         margin-top: 50px;
         display: grid;

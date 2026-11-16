@@ -22,9 +22,11 @@ class App extends Component {
     return (
       <div className='app'>
         <AppHeader />
-        <p className='preview-status' role='status'>
-          Preview: character data needs a Marvel API key. No key is included in this public demo.
-        </p>
+        {!process.env.REACT_APP_MARVEL_API_KEY && !process.env.REACT_APP_MARVEL_API_BASE_URL && (
+          <p className='preview-status' role='status'>
+            Live character data is unavailable until a Marvel public API key is configured.
+          </p>
+        )}
         <main>
           <ErrorBoundary>
             <RandomChar />
