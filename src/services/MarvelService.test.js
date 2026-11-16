@@ -18,6 +18,7 @@ afterEach(() => {
   global.fetch = originalFetch;
   delete process.env.REACT_APP_MARVEL_API_KEY;
   delete process.env.REACT_APP_MARVEL_API_BASE_URL;
+  delete process.env.REACT_APP_MARVEL_DEMO_MODE;
 });
 
 test('requests characters with the configured key and transforms the result', async () => {
@@ -40,10 +41,26 @@ test('requests characters with the configured key and transforms the result', as
   });
 });
 
-test('fails with a clear message when the API key is missing', async () => {
-  await expect(new MarvelService().getCharacter(7)).rejects.toThrow(
-    'Set REACT_APP_MARVEL_API_KEY'
-  );
+test('uses original local sample characters when no live API is configured', async () => {
+  delete process.env.REACT_APP_MARVEL_API_KEY;
+  delete process.env.REACT_APP_MARVEL_API_BASE_URL;
+  delete process.env.REACT_APP_MARVEL_DEMO_MODE;
+  global.fetch = jest.fn();
+  const service = new MarvelService();
+  const characters = await service.getAllCharacters();
+  const selectedCharacter = await service.getCharacter(characters[0].id);
+  const randomCharacter = await service.getRandomCharacter();
+
+  expect(characters).toHaveLength(8);
+  expect(characters[0]).toMatchObject({
+    name: 'Solar Sentinel',
+    description: expect.stringContaining('fictional'),
+    comics: [],
+  });
+  expect(characters[0].thumbnail).toContain('demo-portrait.svg');
+  expect(selectedCharacter).toEqual(characters[0]);
+  expect(characters).toContain(randomCharacter);
+  expect(global.fetch).not.toHaveBeenCalled();
 });
 
 test('handles optional character fields and HTTP errors', async () => {

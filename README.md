@@ -1,42 +1,37 @@
-# Marvel Information Portal
+# Character Explorer
 
-A React application for browsing Marvel characters using the Marvel API.
+A React character browser with two clearly separated data sources: the Marvel public API when a public API key or compatible proxy is configured, and an original offline demo dataset when it is not.
 
-## Features
+## Demo mode
 
-- Shows a random character with links and related details
-- Loads a character list and supports loading more entries
-- Displays details for a selected character
-- Handles API errors with error boundaries and loading states
+[Open the GitHub Pages app](https://goldlexx.github.io/marvel/). Without API configuration, the app displays eight fictional sample profiles with a locally created SVG portrait. The page labels this mode and makes no claim that the samples come from Marvel. The character list supports filtering, selection, details, and a random profile without sending API requests.
+
+Set `REACT_APP_MARVEL_DEMO_MODE=true` in `.env.local` to force demo mode while developing.
+
+## Run locally
+
+```sh
+npm ci
+npm start
+```
+
+Run tests and create a production build:
+
+```sh
+npm test -- --watchAll=false --runInBand
+npm run build
+```
+
+## Connect the Marvel API
+
+Sign in to the [Marvel Developer account](https://developer.marvel.com/account) to obtain your own public API key. Create a local `.env.local` file and set `REACT_APP_MARVEL_API_KEY` to that key. Alternatively, set `REACT_APP_MARVEL_API_BASE_URL` to a compatible proxy endpoint. The key included in a frontend build is public; never put a private key in this app or commit `.env.local`. The Marvel Developer account must authorize the app's domain.
+
+For GitHub Pages builds, configure the repository Actions variable `MARVEL_PUBLIC_API_KEY`. If no key or proxy URL is configured, the published app stays in demo mode.
 
 ## Technologies
 
 - React 18
-- React Router 6
+- JavaScript
 - Sass
-- Create React App (`react-scripts` 5)
-- Marvel public API
-
-## Run locally
-
-```bash
-npm ci
-npm run build
-npm start
-```
-
-Create a local `.env.local` file from `.env.example` and set your Marvel public API key before starting the app. The key must be authorized for the domain that serves the app in the Marvel developer account.
-
-## API key configuration
-
-The browser client reads a public key from `REACT_APP_MARVEL_API_KEY`. Any value included in a browser build is visible to its users, so never place a private credential there. For a server-side proxy, set `REACT_APP_MARVEL_API_BASE_URL` to a compatible endpoint and keep its private key in that server's secret store. The client accepts the Marvel public API response shape from that endpoint.
-
-For the GitHub Pages workflow, configure the repository Actions variable `MARVEL_PUBLIC_API_KEY`. The workflow maps it to `REACT_APP_MARVEL_API_KEY` only during the build; it is not stored in the source tree.
-
-## Demo status
-
-[Open the GitHub Pages demo](https://goldlexx.github.io/marvel/). The app displays a configuration message when no public key or proxy URL is present. Character data still depends on an authorized key and the availability of the Marvel API.
-
-## Verification
-
-The production build completes. Character data could not be verified without a valid API key and API access. Header placeholder links were replaced with non-interactive labels because those sections do not have implemented routes.
+- Create React App
+- Marvel public API integration

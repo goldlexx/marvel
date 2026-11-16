@@ -4,7 +4,6 @@ import MarvelService from '../../services/MarvelService';
 import CharacterImage from '../characterImage/CharacterImage';
 
 import './randomChar.scss';
-import mjolnir from '../../resources/img/mjolnir.png';
 
 class RandomChar extends Component {
   state = {
@@ -71,10 +70,9 @@ class RandomChar extends Component {
             Do you want to get to know him better?
           </p>
           <p className='randomchar__title'>Or choose another one</p>
-          <button onClick={this.updateChar} className='button button__main'>
+          <button type='button' onClick={this.updateChar} className='button button__main'>
             <div className='inner'>try it</div>
           </button>
-          <img src={mjolnir} alt='mjolnir' className='randomchar__decoration' />
         </div>
       </div>
     );
@@ -84,10 +82,7 @@ class RandomChar extends Component {
 const View = ({ char }) => {
   const { name, description, thumbnail, homepage, wiki } = char;
   let imgStyle = { objectFit: 'cover' };
-  if (
-    thumbnail ===
-    'http://i.annihil.us/u/prod/marvel/i/mg/b/40/image_not_available.jpg'
-  ) {
+  if (!thumbnail) {
     imgStyle = { objectFit: 'contain' };
   }
 
@@ -103,12 +98,16 @@ const View = ({ char }) => {
         <p className='randomchar__name'>{name}</p>
         <p className='randomchar__descr'>{description}</p>
         <div className='randomchar__btns'>
-          <a href={homepage} className='button button__main'>
-            <div className='inner'>homepage</div>
-          </a>
-          <a href={wiki} className='button button__secondary'>
-            <div className='inner'>Wiki</div>
-          </a>
+          {homepage ? (
+            <a href={homepage} className='button button__main' target='_blank' rel='noopener noreferrer'>
+              <span className='inner'>homepage</span>
+            </a>
+          ) : null}
+          {wiki ? (
+            <a href={wiki} className='button button__secondary' target='_blank' rel='noopener noreferrer'>
+              <span className='inner'>Wiki</span>
+            </a>
+          ) : null}
         </div>
       </div>
     </div>

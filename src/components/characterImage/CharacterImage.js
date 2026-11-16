@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import fallbackImage from '../../resources/img/UW.png';
+import fallbackImage from '../../resources/img/demo-portrait.svg';
 
 const CharacterImage = ({ alt, ...imageProps }) => {
   const handleImageError = ({ currentTarget }) => {

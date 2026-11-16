@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" role="img" aria-labelledby="title">
+  <title id="title">Original abstract demo portrait</title>
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#7d1830"/>
+      <stop offset="1" stop-color="#171717"/>
+    </linearGradient>
+    <linearGradient id="cape" x1="0" y1="0" x2="0.9" y2="1">
+      <stop offset="0" stop-color="#f6c74e"/>
+      <stop offset="1" stop-color="#eb542f"/>
+    </linearGradient>
+  </defs>
+  <rect width="320" height="320" fill="url(#background)"/>
+  <circle cx="160" cy="128" r="76" fill="#f4d8bd"/>
+  <path d="M68 320c8-74 41-112 92-112s84 38 92 112" fill="url(#cape)"/>
+  <path d="M101 119c12-51 34-76 66-76 27 0 47 17 59 52-41-15-78-9-111 24" fill="#292331"/>
+  <path d="M134 143h8m36 0h8" stroke="#292331" stroke-linecap="round" stroke-width="8"/>
+  <path d="M142 173c11 8 25 8 36 0" fill="none" stroke="#9a4b46" stroke-linecap="round" stroke-width="6"/>
+  <path d="m160 232 15 22-15 20-15-20z" fill="#fff1b2" opacity=".9"/>
+</svg>

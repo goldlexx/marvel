@@ -4,8 +4,7 @@ import RandomChar from '../randomChar/RandomChar';
 import CharList from '../charList/CharList';
 import CharInfo from '../charInfo/CharInfo';
 import ErrorBoundary from '../errorBoundary/ErrorBoundary';
-
-import decoration from '../../resources/img/vision.png';
+import { isMarvelDemoMode } from '../../services/MarvelService';
 
 class App extends Component {
   state = {
@@ -22,9 +21,9 @@ class App extends Component {
     return (
       <div className='app'>
         <AppHeader />
-        {!process.env.REACT_APP_MARVEL_API_KEY && !process.env.REACT_APP_MARVEL_API_BASE_URL && (
+        {isMarvelDemoMode() && (
           <p className='preview-status' role='status'>
-            Live character data is unavailable until a Marvel public API key is configured.
+            Demo mode: these original sample characters are not Marvel characters and are not loaded from the Marvel API.
           </p>
         )}
         <main>
@@ -33,13 +32,15 @@ class App extends Component {
           </ErrorBoundary>
           <div className='char__content'>
             <ErrorBoundary>
-              <CharList onCharSelected={this.onCharSelected} />
+              <CharList
+                onCharSelected={this.onCharSelected}
+                selectedCharId={this.state.selectedChar}
+              />
             </ErrorBoundary>
             <ErrorBoundary>
               <CharInfo charId={this.state.selectedChar} />
             </ErrorBoundary>
           </div>
-          <img className='bg-decoration' src={decoration} alt='vision' />
         </main>
       </div>
     );

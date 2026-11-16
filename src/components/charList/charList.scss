@@ -18,16 +18,41 @@
         column-gap: 25px;
         row-gap: 30px;
     }
+    &__search-label {
+        display: block;
+        margin-bottom: 6px;
+        font-weight: 700;
+    }
+    &__search {
+        display: block;
+        width: min(100%, 650px);
+        min-height: 44px;
+        margin-bottom: 20px;
+        padding: 8px 12px;
+        border: 1px solid #777;
+        font: inherit;
+    }
     &__item {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
         width: 200px;
         height: 318px;
+        border: 0;
         background-color: $dark;
         box-shadow: 5px 5px 10px rgba(0, 0, 0, .25);
         padding: 15px;
+        color: #fff;
+        font: inherit;
+        text-align: left;
         cursor: pointer;
         transition: 0.3s transform;
+        &:focus-visible {
+            outline: 3px solid $main-color;
+            outline-offset: 3px;
+        }
         img {
-            width: 200px;
+            width: calc(100% + 30px);
             height: 200px;
             object-fit: cover;
             transform: translate(-15px, -15px);

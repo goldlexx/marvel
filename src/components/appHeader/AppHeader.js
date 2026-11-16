@@ -4,16 +4,12 @@ const AppHeader = () => {
   return (
     <header className='app__header'>
       <h1 className='app__title'>
-        <span>Marvel</span> information portal
+        <span>Character</span> explorer
       </h1>
       <nav className='app__menu'>
         <ul>
           <li>
-            <span>Characters</span>
-          </li>
-          /
-          <li>
-            <span>Comics</span>
+            <span aria-current='page'>Characters</span>
           </li>
         </ul>
       </nav>

@@ -1,7 +1,16 @@
+import { DEMO_CHARACTERS } from './demoCharacters';
+
+export const isMarvelDemoMode = () =>
+  process.env.REACT_APP_MARVEL_DEMO_MODE === 'true' ||
+  (!process.env.REACT_APP_MARVEL_API_KEY &&
+    !process.env.REACT_APP_MARVEL_API_BASE_URL);
+
 class MarvelService {
   _apiBase = `${(process.env.REACT_APP_MARVEL_API_BASE_URL || 'https://gateway.marvel.com/v1/public/').replace(/\/+$/, '')}/`;
   _apiKey = process.env.REACT_APP_MARVEL_API_KEY;
   _baseOffset = 210;
+
+  getInitialOffset = () => (isMarvelDemoMode() ? 0 : this._baseOffset);
 
   getResource = async (url) => {
     if (!this._apiKey && !process.env.REACT_APP_MARVEL_API_BASE_URL) {
@@ -37,7 +46,11 @@ class MarvelService {
     return payload;
   };
 
-  getAllCharacters = async (offset = this._baseOffset) => {
+  getAllCharacters = async (offset = this.getInitialOffset()) => {
+    if (isMarvelDemoMode()) {
+      return DEMO_CHARACTERS.slice(offset, offset + 9);
+    }
+
     const res = await this.getResource(
       `${this._apiBase}characters?limit=9&offset=${offset}`
     );
@@ -45,6 +58,14 @@ class MarvelService {
   };
 
   getCharacter = async (id) => {
+    if (isMarvelDemoMode()) {
+      const character = DEMO_CHARACTERS.find((item) => item.id === Number(id));
+      if (!character) {
+        throw new Error(`Demo data does not contain character ${id}.`);
+      }
+      return character;
+    }
+
     const res = await this.getResource(
       `${this._apiBase}characters/${id}`
     );
@@ -56,6 +77,10 @@ class MarvelService {
   };
 
   getRandomCharacter = async () => {
+    if (isMarvelDemoMode()) {
+      return DEMO_CHARACTERS[Math.floor(Math.random() * DEMO_CHARACTERS.length)];
+    }
+
     const offset = Math.floor(Math.random() * 1500);
     const characters = await this.getAllCharacters(offset);
     if (characters.length === 0) {

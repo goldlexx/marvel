@@ -85,10 +85,7 @@ const View = ({ char }) => {
   const { name, description, thumbnail, homepage, wiki, comics } = char;
 
   let imgStyle = { objectFit: 'cover' };
-  if (
-    thumbnail ===
-    'http://i.annihil.us/u/prod/marvel/i/mg/b/40/image_not_available.jpg'
-  ) {
+  if (!thumbnail) {
     imgStyle = { objectFit: 'contain' };
   }
 
@@ -99,19 +96,23 @@ const View = ({ char }) => {
         <div>
           <div className='char__info-name'>{name}</div>
           <div className='char__btns'>
-            <a href={homepage} className='button button__main'>
-              <div className='inner'>homepage</div>
-            </a>
-            <a href={wiki} className='button button__secondary'>
-              <div className='inner'>Wiki</div>
-            </a>
+            {homepage ? (
+              <a href={homepage} className='button button__main' target='_blank' rel='noopener noreferrer'>
+                <span className='inner'>homepage</span>
+              </a>
+            ) : null}
+            {wiki ? (
+              <a href={wiki} className='button button__secondary' target='_blank' rel='noopener noreferrer'>
+                <span className='inner'>Wiki</span>
+              </a>
+            ) : null}
           </div>
         </div>
       </div>
       <div className='char__descr'>{description}</div>
       <div className='char__comics'>Comics:</div>
       <ul className='char__comics-list'>
-        {comics.length > 0 ? null : 'There is no comics with this character'}
+        {comics.length > 0 ? null : 'No comic data is available for this character.'}
         {comics.map((item, i) => {
           // eslint-disable-next-line
           if (i > 9) return;
