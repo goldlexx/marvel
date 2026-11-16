@@ -1,0 +1,5 @@
+name = "marvel-api-proxy"
+main = "index.js"
+compatibility_date = "2026-11-16"
+account_id = "e9648642771612b9c00aaa73c74f3020"
+workers_dev = true

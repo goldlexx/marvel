@@ -1,8 +1,9 @@
 import { DEMO_CHARACTERS } from './demoCharacters';
 
-const API_BASE_URL = 'https://superheroapi.com/api';
-// This is a public demo token and is intentionally visible in the browser bundle.
-const API_ACCESS_TOKEN = '24da58b2fe84e02efe92e6f3643eb360';
+const API_BASE_URL = `${(
+  import.meta.env.VITE_SUPERHERO_API_PROXY_URL ||
+  'https://marvel-api-proxy.rustik-yuldashev.workers.dev/api'
+).replace(/\/+$/, '')}/`;
 const PAGE_SIZE = 6;
 const MARVEL_CHARACTER_IDS = [620, 149, 332, 346, 106, 107, 213, 226, 303, 313, 717, 274];
 const characterCache = new Map();
@@ -34,14 +35,14 @@ class MarvelService {
 
     try {
       response = await fetch(
-        `${API_BASE_URL}/${API_ACCESS_TOKEN}/${path}`,
+        `${API_BASE_URL}${path}`,
         { signal: controller.signal }
       );
     } catch (error) {
       if (error.name === 'AbortError') {
-        throw new Error('SuperHero API request timed out. Please try again.');
+        throw new Error('The character service request timed out. Please try again.');
       }
-      throw new Error('SuperHero API is unreachable. Check your connection and try again.');
+      throw new Error('The character service is unreachable. Check your connection and try again.');
     } finally {
       clearTimeout(timeoutId);
     }
@@ -93,7 +94,7 @@ class MarvelService {
       return cachedCharacter;
     }
 
-    const payload = await this.getResource(String(id));
+    const payload = await this.getResource(`characters/${id}`);
     const character = this._transformCharacter(payload);
     characterCache.set(character.id, character);
     return character;

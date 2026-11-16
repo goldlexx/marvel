@@ -37,6 +37,8 @@ jobs:
       - name: Build frontend
         run: npm run build
         working-directory: .
+        env:
+          VITE_SUPERHERO_API_PROXY_URL: https://marvel-api-proxy.rustik-yuldashev.workers.dev/api
       - name: Prepare static artifact
         run: |
           mkdir -p _site

@@ -50,7 +50,7 @@ test('loads curated Marvel characters and transforms their API data', async () =
   const result = await new MarvelService().getAllCharacters();
 
   expect(global.fetch).toHaveBeenCalledTimes(6);
-  expect(new URL(global.fetch.mock.calls[0][0]).pathname).toMatch(/\/620$/);
+  expect(new URL(global.fetch.mock.calls[0][0]).pathname).toMatch(/\/characters\/620$/);
   expect(result[0]).toMatchObject({
     id: 620,
     name: 'Spider-Man',

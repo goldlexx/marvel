@@ -28,9 +28,9 @@ npm run build
 
 ## API and token
 
-This project uses the [SuperHero API](https://superheroapi.com/), which provides character ID lookup, name search, biographies, appearances, power stats, and image URLs.
+This project uses the [SuperHero API](https://superheroapi.com/) through the `marvel-api-proxy` Cloudflare Worker. The proxy accepts only character ID lookups and name searches, and returns CORS responses only to the GitHub Pages origin. The API token is stored as a Worker Secret and is not included in the frontend bundle.
 
-The educational demo token is intentionally embedded in this frontend as requested. It is public in the source and browser bundle and must not be reused as a private credential. Do not add unrelated secrets to client-side code.
+The proxy URL can be overridden with `VITE_SUPERHERO_API_PROXY_URL` when building the frontend.
 
 ## Technologies
 
