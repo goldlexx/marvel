@@ -1,17 +1,37 @@
 import MarvelService from './MarvelService';
 import { afterEach, vi } from 'vitest';
 
-const character = {
-  id: 7,
-  name: 'Example Hero',
-  description: 'A character description',
-  thumbnail: { path: 'https://example.com/hero', extension: 'jpg' },
-  urls: [
-    { type: 'detail', url: 'https://example.com/details' },
-    { type: 'wiki', url: 'https://example.com/wiki' },
-  ],
-  comics: { items: [{ name: 'Example comic' }] },
-};
+const makeCharacter = (overrides = {}) => ({
+  response: 'success',
+  id: '620',
+  name: 'Spider-Man',
+  powerstats: {
+    intelligence: '90',
+    strength: '55',
+    speed: '67',
+    durability: '75',
+    power: '74',
+    combat: '85',
+  },
+  biography: {
+    'full-name': 'Peter Parker',
+    'first-appearance': 'Amazing Fantasy #15',
+    publisher: 'Marvel Comics',
+    alignment: 'good',
+    'place-of-birth': 'New York City',
+    aliases: ['Spidey'],
+  },
+  appearance: {
+    gender: 'Male',
+    race: 'Human',
+    height: ["5'10", '178 cm'],
+    weight: ['167 lb', '75 kg'],
+  },
+  work: { occupation: 'Photographer', base: 'New York City' },
+  image: { url: 'https://example.com/spider-man.jpg' },
+  ...overrides,
+});
+
 const originalFetch = global.fetch;
 
 afterEach(() => {
@@ -20,38 +40,39 @@ afterEach(() => {
   global.fetch = originalFetch;
 });
 
-test('requests characters with the configured key and transforms the result', async () => {
-  vi.stubEnv('VITE_MARVEL_API_KEY', 'test-public-key');
-  global.fetch = vi.fn().mockResolvedValue({
-    ok: true,
-    json: async () => ({ data: { results: [character] } }),
+test('loads curated Marvel characters and transforms their API data', async () => {
+  vi.stubEnv('VITE_MARVEL_DEMO_MODE', 'false');
+  global.fetch = vi.fn(async (url) => {
+    const id = new URL(url).pathname.split('/').pop();
+    return { ok: true, json: async () => makeCharacter({ id }) };
   });
 
-  const result = await new MarvelService().getAllCharacters(3);
+  const result = await new MarvelService().getAllCharacters();
 
-  expect(global.fetch).toHaveBeenCalledTimes(1);
-  expect(global.fetch.mock.calls[0][0].searchParams.get('apikey')).toBe('test-public-key');
+  expect(global.fetch).toHaveBeenCalledTimes(6);
+  expect(new URL(global.fetch.mock.calls[0][0]).pathname).toMatch(/\/620$/);
   expect(result[0]).toMatchObject({
-    id: 7,
-    name: 'Example Hero',
-    homepage: 'https://example.com/details',
-    wiki: 'https://example.com/wiki',
-    comics: [{ name: 'Example comic' }],
+    id: 620,
+    name: 'Spider-Man',
+    thumbnail: 'https://example.com/spider-man.jpg',
+    biography: { fullName: 'Peter Parker', publisher: 'Marvel Comics' },
+    powerstats: { intelligence: '90', strength: '55' },
   });
 });
 
-test('uses original local sample characters when no live API is configured', async () => {
+test('keeps the original local demo dataset available', async () => {
+  vi.stubEnv('VITE_MARVEL_DEMO_MODE', 'true');
   global.fetch = vi.fn();
   const service = new MarvelService();
   const characters = await service.getAllCharacters();
   const selectedCharacter = await service.getCharacter(characters[0].id);
   const randomCharacter = await service.getRandomCharacter();
 
-  expect(characters).toHaveLength(8);
+  expect(characters).toHaveLength(6);
   expect(characters[0]).toMatchObject({
     name: 'Solar Sentinel',
     description: expect.stringContaining('fictional'),
-    comics: [],
+    biography: { publisher: 'Demo' },
   });
   expect(characters[0].thumbnail).toContain('data:image/svg+xml');
   expect(selectedCharacter).toEqual(characters[0]);
@@ -59,61 +80,65 @@ test('uses original local sample characters when no live API is configured', asy
   expect(global.fetch).not.toHaveBeenCalled();
 });
 
-test('handles optional character fields and HTTP errors', async () => {
-  vi.stubEnv('VITE_MARVEL_API_KEY', 'test-public-key');
+test('normalizes optional character fields and image URLs', () => {
   const service = new MarvelService();
-  expect(
-    service._transformCharacter({
-      ...character,
-      urls: undefined,
-      comics: undefined,
-      description: '',
-    })
-  ).toMatchObject({ homepage: '', wiki: '', comics: [] });
+  const character = service._transformCharacter(makeCharacter({
+    biography: { publisher: 'Marvel Comics' },
+    appearance: undefined,
+    powerstats: undefined,
+    work: undefined,
+    image: { url: 'httpss://images.example.com/hero.png' },
+  }));
 
-  global.fetch = vi.fn().mockResolvedValue({ ok: false, status: 503 });
-  await expect(service.getCharacter(7)).rejects.toThrow('unreadable response (503)');
+  expect(character).toMatchObject({
+    thumbnail: 'https://images.example.com/hero.png',
+    biography: { fullName: 'Not available', publisher: 'Marvel Comics' },
+    appearance: { gender: 'Not available' },
+    powerstats: {},
+    work: { occupation: 'Not available' },
+  });
 });
 
-test('normalizes insecure image URLs and reports empty character results', async () => {
-  vi.stubEnv('VITE_MARVEL_API_KEY', 'test-public-key');
+test('rejects characters from publishers other than Marvel Comics', () => {
   const service = new MarvelService();
-  expect(service._transformCharacter({
-    ...character,
-    thumbnail: { path: 'http://images.example.com/hero', extension: 'png' },
-  }).thumbnail).toBe('https://images.example.com/hero.png');
+  expect(() => service._transformCharacter(makeCharacter({
+    biography: { publisher: 'DC Comics' },
+  }))).toThrow('is not published by Marvel Comics');
+});
 
+test('searches by name and filters results to Marvel Comics', async () => {
+  vi.stubEnv('VITE_MARVEL_DEMO_MODE', 'false');
   global.fetch = vi.fn().mockResolvedValue({
     ok: true,
-    json: async () => ({ data: { results: [] } }),
+    json: async () => ({
+      response: 'success',
+      results: [
+        makeCharacter(),
+        makeCharacter({ id: '69', name: 'Batman', biography: { publisher: 'DC Comics' } }),
+      ],
+    }),
   });
-  await expect(service.getCharacter(999)).rejects.toThrow('did not find character 999');
+
+  const results = await new MarvelService().searchCharacters('Spider-Man');
+
+  expect(new URL(global.fetch.mock.calls[0][0]).pathname).toMatch(/\/search\/Spider-Man$/);
+  expect(results).toHaveLength(1);
+  expect(results[0].name).toBe('Spider-Man');
 });
 
-test('supports a configured proxy base URL without a browser API key', async () => {
-  vi.stubEnv('VITE_MARVEL_API_BASE_URL', 'https://proxy.example.com/v1/public/');
+test('reports API errors and unreadable responses', async () => {
+  vi.stubEnv('VITE_MARVEL_DEMO_MODE', 'false');
+  const service = new MarvelService();
   global.fetch = vi.fn().mockResolvedValue({
     ok: true,
-    json: async () => ({ data: { results: [character] } }),
+    json: async () => ({ response: 'error', error: 'Invalid access token' }),
   });
+  await expect(service.getCharacter(999)).rejects.toThrow('Invalid access token');
 
-  await new MarvelService().getCharacter(7);
-  expect(global.fetch.mock.calls[0][0].origin).toBe('https://proxy.example.com');
-});
-
-test('surfaces API error payloads and malformed responses', async () => {
-  vi.stubEnv('VITE_MARVEL_API_KEY', 'test-public-key');
-  const service = new MarvelService();
   global.fetch = vi.fn().mockResolvedValue({
     ok: false,
-    status: 403,
-    json: async () => ({ status: 'Invalid Referer' }),
+    status: 503,
+    json: async () => { throw new Error('bad JSON'); },
   });
-  await expect(service.getCharacter(7)).rejects.toThrow('Invalid Referer');
-
-  global.fetch = vi.fn().mockResolvedValue({
-    ok: true,
-    json: async () => ({ data: {} }),
-  });
-  await expect(service.getAllCharacters()).rejects.toThrow('missing character data');
+  await expect(service.getCharacter(998)).rejects.toThrow('unreadable response (503)');
 });

@@ -47,4 +47,30 @@ export const DEMO_CHARACTERS = [
   homepage: '',
   wiki: '',
   comics: [],
+  biography: {
+    fullName: 'Not available in demo mode',
+    publisher: 'Demo',
+    firstAppearance: 'Not available in demo mode',
+    alignment: 'Not available in demo mode',
+    placeOfBirth: 'Not available in demo mode',
+    aliases: 'Not available in demo mode',
+  },
+  appearance: {
+    gender: 'Not available in demo mode',
+    race: 'Not available in demo mode',
+    height: 'Not available in demo mode',
+    weight: 'Not available in demo mode',
+  },
+  powerstats: {
+    intelligence: 'Not available in demo mode',
+    strength: 'Not available in demo mode',
+    speed: 'Not available in demo mode',
+    durability: 'Not available in demo mode',
+    power: 'Not available in demo mode',
+    combat: 'Not available in demo mode',
+  },
+  work: {
+    occupation: 'Not available in demo mode',
+    base: 'Not available in demo mode',
+  },
 }));

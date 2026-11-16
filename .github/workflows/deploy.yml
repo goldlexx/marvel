@@ -37,8 +37,6 @@ jobs:
       - name: Build frontend
         run: npm run build
         working-directory: .
-        env:
-          VITE_MARVEL_API_KEY: ${{ vars.MARVEL_PUBLIC_API_KEY }}
       - name: Prepare static artifact
         run: |
           mkdir -p _site

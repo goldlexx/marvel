@@ -23,7 +23,7 @@ class App extends Component {
         <AppHeader />
         {isMarvelDemoMode() && (
           <p className='preview-status' role='status'>
-            Demo mode: these original sample characters are not Marvel characters and are not loaded from the Marvel API.
+            Demo mode: these original sample characters are fictional and are not loaded from SuperHero API.
           </p>
         )}
         <main>

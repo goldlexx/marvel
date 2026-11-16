@@ -82,7 +82,17 @@ class CharInfo extends Component {
 }
 
 const View = ({ char }) => {
-  const { name, description, thumbnail, homepage, wiki, comics } = char;
+  const {
+    name,
+    description,
+    thumbnail,
+    homepage,
+    wiki,
+    biography,
+    appearance,
+    powerstats,
+    work,
+  } = char;
 
   let imgStyle = { objectFit: 'cover' };
   if (!thumbnail) {
@@ -110,21 +120,73 @@ const View = ({ char }) => {
         </div>
       </div>
       <div className='char__descr'>{description}</div>
-      <div className='char__comics'>Comics:</div>
-      <ul className='char__comics-list'>
-        {comics.length > 0 ? null : 'No comic data is available for this character.'}
-        {comics.map((item, i) => {
-          // eslint-disable-next-line
-          if (i > 9) return;
-          return (
-            <li key={i} className='char__comics-item'>
-              {item.name}
-            </li>
-          );
-        })}
-      </ul>
+      <CharacterDetails
+        biography={biography}
+        appearance={appearance}
+        powerstats={powerstats}
+        work={work}
+      />
     </>
   );
+};
+
+const CharacterDetails = ({ biography, appearance, powerstats, work }) => {
+  const sections = [
+    {
+      title: 'Biography',
+      entries: [
+        ['Real name', biography.fullName],
+        ['Publisher', biography.publisher],
+        ['First appearance', biography.firstAppearance],
+        ['Alignment', biography.alignment],
+        ['Place of birth', biography.placeOfBirth],
+        ['Aliases', biography.aliases],
+      ],
+    },
+    {
+      title: 'Appearance',
+      entries: [
+        ['Gender', appearance.gender],
+        ['Race', appearance.race],
+        ['Height', appearance.height],
+        ['Weight', appearance.weight],
+      ],
+    },
+    {
+      title: 'Power stats',
+      entries: Object.entries(powerstats).map(([stat, value]) => [
+        stat.charAt(0).toUpperCase() + stat.slice(1),
+        value,
+      ]),
+    },
+    {
+      title: 'Work',
+      entries: [
+        ['Occupation', work.occupation],
+        ['Base', work.base],
+      ],
+    },
+  ];
+
+  return sections.map(({ title, entries }) => (
+    <section key={title}>
+      <h3 className='char__comics'>{title}</h3>
+      <ul className='char__comics-list'>
+        {entries.map(([label, value]) => (
+          <li key={label} className='char__comics-item'>
+            <strong>{label}:</strong> {value}
+          </li>
+        ))}
+      </ul>
+    </section>
+  ));
+};
+
+CharacterDetails.propTypes = {
+  biography: PropTypes.objectOf(PropTypes.string).isRequired,
+  appearance: PropTypes.objectOf(PropTypes.string).isRequired,
+  powerstats: PropTypes.objectOf(PropTypes.string).isRequired,
+  work: PropTypes.objectOf(PropTypes.string).isRequired,
 };
 
 CharInfo.propTypes = {

@@ -15,12 +15,21 @@ class CharList extends Component {
     offset: 0,
     charEnded: false,
     searchTerm: '',
+    searchResults: null,
+    searchLoading: false,
   };
 
   marvelService = new MarvelService();
+  searchTimeout = null;
+  searchRequestId = 0;
 
   componentDidMount() {
     this.onRequest();
+  }
+
+  componentWillUnmount() {
+    clearTimeout(this.searchTimeout);
+    this.searchRequestId += 1;
   }
 
   onRequest = (offset) => {
@@ -41,8 +50,8 @@ class CharList extends Component {
       charList: [...charList, ...newCharList],
       loading: false,
       newItemLoading: false,
-      offset: requestOffset + newCharList.length,
-      charEnded: newCharList.length < 9,
+      offset: requestOffset + 6,
+      charEnded: !this.marvelService.hasMoreCharacters(requestOffset),
     }));
   };
 
@@ -52,6 +61,36 @@ class CharList extends Component {
       loading: false,
       newItemLoading: false,
     });
+  };
+
+  onSearchChange = (event) => {
+    const searchTerm = event.target.value;
+    const query = searchTerm.trim();
+    clearTimeout(this.searchTimeout);
+    this.searchRequestId += 1;
+    const requestId = this.searchRequestId;
+
+    this.setState({ searchTerm, error: '' });
+    if (!query) {
+      this.setState({ searchResults: null, searchLoading: false });
+      return;
+    }
+
+    this.setState({ searchResults: [], searchLoading: true });
+    this.searchTimeout = setTimeout(() => {
+      this.marvelService
+        .searchCharacters(query)
+        .then((characters) => {
+          if (requestId === this.searchRequestId) {
+            this.setState({ searchResults: characters, searchLoading: false });
+          }
+        })
+        .catch((error) => {
+          if (requestId === this.searchRequestId) {
+            this.setState({ error: error.message, searchLoading: false });
+          }
+        });
+    }, 300);
   };
 
   renderItems(arr) {
@@ -80,43 +119,49 @@ class CharList extends Component {
   }
 
   render() {
-    const { charList, loading, error, offset, newItemLoading, charEnded, searchTerm } =
+    const {
+      charList,
+      loading,
+      error,
+      offset,
+      newItemLoading,
+      charEnded,
+      searchTerm,
+      searchResults,
+      searchLoading,
+    } =
       this.state;
 
-    const filteredCharacters = charList.filter((character) =>
-      `${character.name} ${character.description}`
-        .toLowerCase()
-        .includes(searchTerm.trim().toLowerCase())
-    );
-    const items = this.renderItems(filteredCharacters);
+    const visibleCharacters = searchResults === null ? charList : searchResults;
+    const items = this.renderItems(visibleCharacters);
 
     const errorMessage = error ? <p className='char__error' role='alert'>{error}</p> : null;
-    const spinner = loading ? <Spinner /> : null;
+    const spinner = loading || searchLoading ? <Spinner /> : null;
     return (
       <div className='char__list'>
         <label className='char__search-label' htmlFor='character-search'>
-          Search loaded characters
+          Search Marvel Comics characters
         </label>
         <input
           id='character-search'
           className='char__search'
           type='search'
           value={searchTerm}
-          onChange={(event) => this.setState({ searchTerm: event.target.value })}
+          onChange={this.onSearchChange}
         />
         {errorMessage}
         {spinner}
-        {!loading && !error && filteredCharacters.length > 0 ? items : null}
-        {!loading && !error && filteredCharacters.length === 0 && charList.length > 0 ? (
-          <p role='status'>No characters match your search.</p>
+        {!loading && !searchLoading && !error && visibleCharacters.length > 0 ? items : null}
+        {!loading && !searchLoading && !error && searchTerm.trim() && visibleCharacters.length === 0 ? (
+          <p role='status'>No Marvel Comics characters match your search.</p>
         ) : null}
-        {!loading && !error && charList.length === 0 ? (
+        {!loading && !searchLoading && !error && !searchTerm.trim() && charList.length === 0 ? (
           <p role='status'>No characters were returned.</p>
         ) : null}
         <button
           className='button button__main button__long'
           disabled={newItemLoading}
-          hidden={charEnded}
+          hidden={charEnded || searchResults !== null}
           onClick={() => this.onRequest(offset)}
         >
           <div className='inner'>load more</div>

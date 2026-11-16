@@ -7,6 +7,7 @@ afterEach(() => {
 });
 
 test('filters demo cards and selects a character with the keyboard-accessible button', async () => {
+  vi.stubEnv('VITE_MARVEL_DEMO_MODE', 'true');
   const onCharSelected = vi.fn();
 
   render(<CharList onCharSelected={onCharSelected} />);
@@ -14,11 +15,11 @@ test('filters demo cards and selects a character with the keyboard-accessible bu
   await screen.findByRole('button', {
     name: /Solar Sentinel/i,
   });
-  fireEvent.change(screen.getByLabelText('Search loaded characters'), {
+  fireEvent.change(screen.getByLabelText('Search Marvel Comics characters'), {
     target: { value: 'tide' },
   });
 
-  expect(screen.queryByRole('button', { name: /Tideglass/i })).not.toBeNull();
+  expect(await screen.findByRole('button', { name: /Tideglass/i })).not.toBeNull();
   expect(screen.queryByRole('button', { name: /Solar Sentinel/i })).toBeNull();
 
   fireEvent.click(screen.getByRole('button', { name: /Tideglass/i }));

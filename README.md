@@ -1,12 +1,16 @@
-# Character Explorer
+# Marvel Character Explorer
 
-A React character browser with two clearly separated data sources: the Marvel public API when a public API key or compatible proxy is configured, and an original offline demo dataset when it is not.
+A React app for exploring Marvel Comics characters, their biographies, appearances, and power stats.
+
+## Live demo
+
+[Open the GitHub Pages app](https://goldlexx.github.io/marvel/).
+
+The main list loads a curated set of SuperHero API character IDs and keeps only records whose publisher is `Marvel Comics`. Search uses the API's `/search/{name}` endpoint and applies the same publisher filter. Select a character to view its profile and stats.
 
 ## Demo mode
 
-[Open the GitHub Pages app](https://goldlexx.github.io/marvel/). Without API configuration, the app displays eight fictional sample profiles with a locally created SVG portrait. The page labels this mode and makes no claim that the samples come from Marvel. The character list supports filtering, selection, details, and a random profile without sending API requests.
-
-Set `VITE_MARVEL_DEMO_MODE=true` in `.env.local` to force demo mode while developing.
+If the API is unavailable, open the published site with `?demo=true` (or set `VITE_MARVEL_DEMO_MODE=true` in `.env.local`) to use the original offline sample characters. Demo profiles are fictional, visibly labeled, and use an original local SVG portrait.
 
 ## Run locally
 
@@ -15,23 +19,19 @@ npm ci
 npm start
 ```
 
-Run tests and create a production build:
+Run the existing tests and production build:
 
 ```sh
 npm test
 npm run build
 ```
 
-## Connect the Marvel API
+## API and token
 
-Sign in to the [Marvel Developer account](https://developer.marvel.com/account) to obtain your own public API key. Create a local `.env.local` file and set `VITE_MARVEL_API_KEY` to that key. Alternatively, set `VITE_MARVEL_API_BASE_URL` to a compatible proxy endpoint. The key included in a frontend build is public; never put a private key in this app or commit `.env.local`. The Marvel Developer account must authorize the app's domain.
+This project uses the [SuperHero API](https://superheroapi.com/), which provides character ID lookup, name search, biographies, appearances, power stats, and image URLs.
 
-For GitHub Pages builds, configure the repository Actions variable `MARVEL_PUBLIC_API_KEY`. If no key or proxy URL is configured, the published app stays in demo mode.
+The educational demo token is intentionally embedded in this frontend as requested. It is public in the source and browser bundle and must not be reused as a private credential. Do not add unrelated secrets to client-side code.
 
 ## Technologies
 
-- React 18
-- JavaScript
-- Sass
-- Vite and Vitest
-- Marvel public API integration
+React 18, JavaScript, Sass, Vite, Vitest, and SuperHero API.
