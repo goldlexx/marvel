@@ -1,4 +1,5 @@
 import MarvelService from './MarvelService';
+import { afterEach, vi } from 'vitest';
 
 const character = {
   id: 7,
@@ -14,16 +15,14 @@ const character = {
 const originalFetch = global.fetch;
 
 afterEach(() => {
-  jest.restoreAllMocks();
+  vi.restoreAllMocks();
+  vi.unstubAllEnvs();
   global.fetch = originalFetch;
-  delete process.env.REACT_APP_MARVEL_API_KEY;
-  delete process.env.REACT_APP_MARVEL_API_BASE_URL;
-  delete process.env.REACT_APP_MARVEL_DEMO_MODE;
 });
 
 test('requests characters with the configured key and transforms the result', async () => {
-  process.env.REACT_APP_MARVEL_API_KEY = 'test-public-key';
-  global.fetch = jest.fn().mockResolvedValue({
+  vi.stubEnv('VITE_MARVEL_API_KEY', 'test-public-key');
+  global.fetch = vi.fn().mockResolvedValue({
     ok: true,
     json: async () => ({ data: { results: [character] } }),
   });
@@ -42,10 +41,7 @@ test('requests characters with the configured key and transforms the result', as
 });
 
 test('uses original local sample characters when no live API is configured', async () => {
-  delete process.env.REACT_APP_MARVEL_API_KEY;
-  delete process.env.REACT_APP_MARVEL_API_BASE_URL;
-  delete process.env.REACT_APP_MARVEL_DEMO_MODE;
-  global.fetch = jest.fn();
+  global.fetch = vi.fn();
   const service = new MarvelService();
   const characters = await service.getAllCharacters();
   const selectedCharacter = await service.getCharacter(characters[0].id);
@@ -57,14 +53,14 @@ test('uses original local sample characters when no live API is configured', asy
     description: expect.stringContaining('fictional'),
     comics: [],
   });
-  expect(characters[0].thumbnail).toContain('demo-portrait.svg');
+  expect(characters[0].thumbnail).toContain('data:image/svg+xml');
   expect(selectedCharacter).toEqual(characters[0]);
   expect(characters).toContain(randomCharacter);
   expect(global.fetch).not.toHaveBeenCalled();
 });
 
 test('handles optional character fields and HTTP errors', async () => {
-  process.env.REACT_APP_MARVEL_API_KEY = 'test-public-key';
+  vi.stubEnv('VITE_MARVEL_API_KEY', 'test-public-key');
   const service = new MarvelService();
   expect(
     service._transformCharacter({
@@ -75,19 +71,19 @@ test('handles optional character fields and HTTP errors', async () => {
     })
   ).toMatchObject({ homepage: '', wiki: '', comics: [] });
 
-  global.fetch = jest.fn().mockResolvedValue({ ok: false, status: 503 });
+  global.fetch = vi.fn().mockResolvedValue({ ok: false, status: 503 });
   await expect(service.getCharacter(7)).rejects.toThrow('unreadable response (503)');
 });
 
 test('normalizes insecure image URLs and reports empty character results', async () => {
-  process.env.REACT_APP_MARVEL_API_KEY = 'test-public-key';
+  vi.stubEnv('VITE_MARVEL_API_KEY', 'test-public-key');
   const service = new MarvelService();
   expect(service._transformCharacter({
     ...character,
     thumbnail: { path: 'http://images.example.com/hero', extension: 'png' },
   }).thumbnail).toBe('https://images.example.com/hero.png');
 
-  global.fetch = jest.fn().mockResolvedValue({
+  global.fetch = vi.fn().mockResolvedValue({
     ok: true,
     json: async () => ({ data: { results: [] } }),
   });
@@ -95,8 +91,8 @@ test('normalizes insecure image URLs and reports empty character results', async
 });
 
 test('supports a configured proxy base URL without a browser API key', async () => {
-  process.env.REACT_APP_MARVEL_API_BASE_URL = 'https://proxy.example.com/v1/public/';
-  global.fetch = jest.fn().mockResolvedValue({
+  vi.stubEnv('VITE_MARVEL_API_BASE_URL', 'https://proxy.example.com/v1/public/');
+  global.fetch = vi.fn().mockResolvedValue({
     ok: true,
     json: async () => ({ data: { results: [character] } }),
   });
@@ -106,16 +102,16 @@ test('supports a configured proxy base URL without a browser API key', async () 
 });
 
 test('surfaces API error payloads and malformed responses', async () => {
-  process.env.REACT_APP_MARVEL_API_KEY = 'test-public-key';
+  vi.stubEnv('VITE_MARVEL_API_KEY', 'test-public-key');
   const service = new MarvelService();
-  global.fetch = jest.fn().mockResolvedValue({
+  global.fetch = vi.fn().mockResolvedValue({
     ok: false,
     status: 403,
     json: async () => ({ status: 'Invalid Referer' }),
   });
   await expect(service.getCharacter(7)).rejects.toThrow('Invalid Referer');
 
-  global.fetch = jest.fn().mockResolvedValue({
+  global.fetch = vi.fn().mockResolvedValue({
     ok: true,
     json: async () => ({ data: {} }),
   });

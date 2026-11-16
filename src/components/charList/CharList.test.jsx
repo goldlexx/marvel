@@ -1,17 +1,13 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import CharList from './CharList';
+import { afterEach, vi } from 'vitest';
 
 afterEach(() => {
-  delete process.env.REACT_APP_MARVEL_API_KEY;
-  delete process.env.REACT_APP_MARVEL_API_BASE_URL;
-  delete process.env.REACT_APP_MARVEL_DEMO_MODE;
+  vi.unstubAllEnvs();
 });
 
 test('filters demo cards and selects a character with the keyboard-accessible button', async () => {
-  delete process.env.REACT_APP_MARVEL_API_KEY;
-  delete process.env.REACT_APP_MARVEL_API_BASE_URL;
-  delete process.env.REACT_APP_MARVEL_DEMO_MODE;
-  const onCharSelected = jest.fn();
+  const onCharSelected = vi.fn();
 
   render(<CharList onCharSelected={onCharSelected} />);
 

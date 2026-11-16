@@ -1,20 +1,20 @@
 import { DEMO_CHARACTERS } from './demoCharacters';
 
 export const isMarvelDemoMode = () =>
-  process.env.REACT_APP_MARVEL_DEMO_MODE === 'true' ||
-  (!process.env.REACT_APP_MARVEL_API_KEY &&
-    !process.env.REACT_APP_MARVEL_API_BASE_URL);
+  import.meta.env.VITE_MARVEL_DEMO_MODE === 'true' ||
+  (!import.meta.env.VITE_MARVEL_API_KEY &&
+    !import.meta.env.VITE_MARVEL_API_BASE_URL);
 
 class MarvelService {
-  _apiBase = `${(process.env.REACT_APP_MARVEL_API_BASE_URL || 'https://gateway.marvel.com/v1/public/').replace(/\/+$/, '')}/`;
-  _apiKey = process.env.REACT_APP_MARVEL_API_KEY;
+  _apiBase = `${(import.meta.env.VITE_MARVEL_API_BASE_URL || 'https://gateway.marvel.com/v1/public/').replace(/\/+$/, '')}/`;
+  _apiKey = import.meta.env.VITE_MARVEL_API_KEY;
   _baseOffset = 210;
 
   getInitialOffset = () => (isMarvelDemoMode() ? 0 : this._baseOffset);
 
   getResource = async (url) => {
-    if (!this._apiKey && !process.env.REACT_APP_MARVEL_API_BASE_URL) {
-      throw new Error('Set REACT_APP_MARVEL_API_KEY to load character data.');
+    if (!this._apiKey && !import.meta.env.VITE_MARVEL_API_BASE_URL) {
+      throw new Error('Set VITE_MARVEL_API_KEY to load character data.');
     }
     const requestUrl = new URL(url);
     if (this._apiKey) {
