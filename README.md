@@ -1,37 +1,41 @@
-# Marvel Character Explorer
+<div align="center">
 
-A React app for exploring Marvel Comics characters, their biographies, appearances, and power stats.
+# 🦸 Marvel Character Explorer
 
-## Live demo
+React-приложение для поиска персонажей Marvel и просмотра их биографий и характеристик.
 
-[Open the GitHub Pages app](https://goldlexx.github.io/marvel/).
+[![React](https://img.shields.io/badge/React-18-61dafb?logo=react&logoColor=111)](https://react.dev/) [![Vite](https://img.shields.io/badge/Vite-646cff?logo=vite&logoColor=fff)](https://vite.dev/) [![Demo](https://img.shields.io/badge/demo-GitHub%20Pages-222?logo=github)](https://goldlexx.github.io/marvel/)
 
-The main list loads a curated set of SuperHero API character IDs and keeps only records whose publisher is `Marvel Comics`. Search uses the API's `/search/{name}` endpoint and applies the same publisher filter. Select a character to view its profile and stats.
+</div>
 
-## Demo mode
+## Возможности
 
-If the API is unavailable, open the published site with `?demo=true` (or set `VITE_MARVEL_DEMO_MODE=true` in `.env.local`) to use the original offline sample characters. Demo profiles are fictional, visibly labeled, and use an original local SVG portrait.
+- подборка персонажей с фильтром `Marvel Comics`;
+- поиск через SuperHero API;
+- карточка с биографией и power stats;
+- Demo Mode как резервный вариант.
 
-## Run locally
+## Демонстрация
 
-```sh
+[Открыть Marvel Character Explorer](https://goldlexx.github.io/marvel/)
+
+## Архитектура
+
+Frontend обращается к отдельному Cloudflare Worker, который ограничивает запросы к SuperHero API и добавляет CORS для GitHub Pages.
+
+## Установка и запуск
+
+```bash
 npm ci
-npm start
+npm run dev
 ```
 
-Run the existing tests and production build:
+Production-сборка: `npm run build`.
 
-```sh
-npm test
-npm run build
-```
+## Технологии
 
-## API and token
+React, Vite, Sass, SuperHero API, Cloudflare Workers.
 
-This project uses the [SuperHero API](https://superheroapi.com/) through the `marvel-api-proxy` Cloudflare Worker. The proxy accepts only character ID lookups and name searches, and returns CORS responses only to the GitHub Pages origin. The API token is stored as a Worker Secret and is not included in the frontend bundle.
+## Лицензия
 
-The proxy URL can be overridden with `VITE_SUPERHERO_API_PROXY_URL` when building the frontend.
-
-## Technologies
-
-React 18, JavaScript, Sass, Vite, Vitest, and SuperHero API.
+Лицензия в репозитории не указана.
