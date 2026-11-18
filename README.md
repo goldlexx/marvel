@@ -2,40 +2,53 @@
 
 # 🦸 Marvel Character Explorer
 
-React-приложение для поиска персонажей Marvel и просмотра их биографий и характеристик.
+**Каталог персонажей Marvel с поиском по имени, портретами, биографиями и характеристиками.**
 
-[![React](https://img.shields.io/badge/React-18-61dafb?logo=react&logoColor=111)](https://react.dev/) [![Vite](https://img.shields.io/badge/Vite-646cff?logo=vite&logoColor=fff)](https://vite.dev/) [![Demo](https://img.shields.io/badge/demo-GitHub%20Pages-222?logo=github)](https://goldlexx.github.io/marvel/)
+![React](https://img.shields.io/badge/React-087E98) ![Vite](https://img.shields.io/badge/Vite-6951C8) ![Sass](https://img.shields.io/badge/Sass-A23A70) ![Workers](https://img.shields.io/badge/Workers-A54809)
+
+[Открыть каталог](https://goldlexx.github.io/marvel/) · [Открыть деморежим](https://goldlexx.github.io/marvel/?demo=true) · [Локальный запуск](#локальный-запуск)
 
 </div>
 
-## Возможности
+## Как пользоваться
 
-- подборка персонажей с фильтром `Marvel Comics`;
-- поиск через SuperHero API;
-- карточка с биографией и power stats;
-- Demo Mode как резервный вариант.
+Главная показывает персонажей из подборки из 12 ID, порциями по шесть. Выберите карточку, чтобы посмотреть настоящее имя героя, первое появление, происхождение, псевдонимы и доступные характеристики. Набор сведений зависит от записи в SuperHero API.
 
-## Демонстрация
+Поиск обращается к сервису по имени. В результатах остаются записи с издателем `Marvel Comics`, поэтому поиск может вернуть больше героев, чем представлено в стартовой подборке.
 
-[Открыть Marvel Character Explorer](https://goldlexx.github.io/marvel/)
+![Демонстрационный каталог с карточками вымышленных героев и открытым описанием](docs/interface.jpg)
 
-## Архитектура
+*На снимке включён Demo Mode. Персонажи этого набора вымышлены, портреты загружаются локально.*
 
-Frontend обращается к отдельному Cloudflare Worker, который ограничивает запросы к SuperHero API и добавляет CORS для GitHub Pages.
+## Откуда берутся данные
 
-## Установка и запуск
-
-```bash
-npm ci
-npm run dev
+```mermaid
+flowchart LR
+    Browser[React] -->|ID или имя| Proxy[Cloudflare Worker]
+    Proxy --> SuperHero[SuperHero API]
+    Demo[Локальные демоданные] -->|Demo Mode| Browser
 ```
 
-Production-сборка: `npm run build`.
+| Технология | Что делает в проекте |
+| --- | --- |
+| React и Sass | Список, выбор карточки, детали героя и состояния загрузки |
+| Vite и Vitest | Разработка, сборка и проверки компонентов и сервиса |
+| Cloudflare Workers | Два маршрута GET с CORS для опубликованного frontend |
+| SuperHero API | Биография, характеристики и URL портрета |
 
-## Технологии
+[Сервис персонажей](src/services/MarvelService.js) нормализует ответы, хранит уже загруженные профили в памяти и прерывает затянувшийся запрос через 12 секунд. Отсутствующие поля получают текстовую замену. Адрес изображения берётся из ответа API. [Worker](worker/index.js) принимает только `/api/characters/:id` и `/api/search/:name`. Ключ `SUPERHERO_API_TOKEN` нужен на стороне Worker.
 
-React, Vite, Sass, SuperHero API, Cloudflare Workers.
+## Локальный запуск
 
-## Лицензия
+```sh
+npm ci
+npm start
+```
 
-Лицензия в репозитории не указана.
+Откройте выведенный Vite адрес с параметром `?demo=true`. Можно также задать `VITE_MARVEL_DEMO_MODE=true` в `.env.local`. [Локальный набор](src/services/demoCharacters.js) позволяет проверить выбор карточки и поиск при недоступности внешнего API.
+
+Публичный Worker разрешает запросы со страницы на GitHub Pages. Для другого окружения используйте совместимый прокси и укажите его базовый URL вместе с `/api` в `VITE_SUPERHERO_API_PROXY_URL`.
+
+## Проверки
+
+`npm test` запускает Vitest для обработки ответов, фильтрации и выбора карточек. `npm run build` собирает статическую версию.
