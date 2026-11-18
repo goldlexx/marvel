@@ -2,7 +2,7 @@ import { DEMO_CHARACTERS } from './demoCharacters';
 
 const API_BASE_URL = `${(
   import.meta.env.VITE_SUPERHERO_API_PROXY_URL ||
-  'https://marvel-api-proxy.rustik-yuldashev.workers.dev/api'
+  'https://api-marvel.goldlexx.ru/api'
 ).replace(/\/+$/, '')}/`;
 const PAGE_SIZE = 6;
 const MARVEL_CHARACTER_IDS = [620, 149, 332, 346, 106, 107, 213, 226, 303, 313, 717, 274];
