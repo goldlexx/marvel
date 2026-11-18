@@ -36,7 +36,7 @@ flowchart LR
 | Cloudflare Workers | Два маршрута GET с CORS для опубликованного frontend |
 | SuperHero API | Биография, характеристики и URL портрета |
 
-[Сервис персонажей](src/services/MarvelService.js) нормализует ответы, хранит уже загруженные профили в памяти и прерывает затянувшийся запрос через 12 секунд. Отсутствующие поля получают текстовую замену. Адрес изображения берётся из ответа API. [Worker](worker/index.js) принимает только `/api/characters/:id` и `/api/search/:name`. Ключ `SUPERHERO_API_TOKEN` нужен на стороне Worker.
+[Сервис персонажей](src/services/MarvelService.js) нормализует ответы, хранит уже загруженные профили в памяти и прерывает затянувшийся запрос через 12 секунд. Отсутствующие поля получают текстовую замену. Адрес изображения берётся из ответа API. Если портрета нет или он не загрузился, [компонент изображения](src/components/characterImage/CharacterImage.jsx) показывает локальную SVG-иллюстрацию. [Worker](worker/index.js) принимает только `/api/characters/:id` и `/api/search/:name`. Ключ `SUPERHERO_API_TOKEN` нужен на стороне Worker.
 
 ## Локальный запуск
 
