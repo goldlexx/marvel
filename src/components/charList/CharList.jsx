@@ -28,6 +28,7 @@ class CharList extends Component {
   }
 
   componentWillUnmount() {
+    this.searchController?.abort();
     clearTimeout(this.searchTimeout);
     this.searchRequestId += 1;
   }
@@ -66,6 +67,7 @@ class CharList extends Component {
   onSearchChange = (event) => {
     const searchTerm = event.target.value;
     const query = searchTerm.trim();
+    this.searchController?.abort();
     clearTimeout(this.searchTimeout);
     this.searchRequestId += 1;
     const requestId = this.searchRequestId;
@@ -78,8 +80,9 @@ class CharList extends Component {
 
     this.setState({ searchResults: [], searchLoading: true });
     this.searchTimeout = setTimeout(() => {
+      this.searchController = new AbortController();
       this.marvelService
-        .searchCharacters(query)
+        .searchCharacters(query, this.searchController.signal)
         .then((characters) => {
           if (requestId === this.searchRequestId) {
             this.setState({ searchResults: characters, searchLoading: false });
@@ -108,7 +111,7 @@ class CharList extends Component {
             aria-pressed={this.props.selectedCharId === item.id}
             onClick={() => this.props.onCharSelected(item.id)}
           >
-            <CharacterImage src={item.thumbnail} alt={item.name} style={imgStyle} />
+            <CharacterImage loading="lazy" decoding="async" src={item.thumbnail} alt={item.name} style={imgStyle} />
             <span className='char__name'>{item.name}</span>
           </button>
         </li>

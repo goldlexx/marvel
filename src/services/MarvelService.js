@@ -28,8 +28,11 @@ class MarvelService {
     return offset + PAGE_SIZE < catalogSize;
   };
 
-  getResource = async (path) => {
+  getResource = async (path, signal) => {
     const controller = new AbortController();
+    const cancel = () => controller.abort();
+    if (signal?.aborted) cancel();
+    signal?.addEventListener('abort', cancel, { once: true });
     const timeoutId = setTimeout(() => controller.abort(), 12000);
     let response;
 
@@ -44,6 +47,7 @@ class MarvelService {
       }
       throw new Error('The character service is unreachable. Check your connection and try again.');
     } finally {
+      signal?.removeEventListener('abort', cancel);
       clearTimeout(timeoutId);
     }
 
@@ -100,7 +104,7 @@ class MarvelService {
     return character;
   };
 
-  searchCharacters = async (name) => {
+  searchCharacters = async (name, signal) => {
     const query = name.trim();
     if (!query) {
       return [];
@@ -114,7 +118,7 @@ class MarvelService {
 
     let payload;
     try {
-      payload = await this.getResource(`search/${encodeURIComponent(query)}`);
+      payload = await this.getResource(`search/${encodeURIComponent(query)}`, signal);
     } catch (error) {
       if (/not found|no results?|no character/i.test(error.message)) {
         return [];

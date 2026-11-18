@@ -54,7 +54,7 @@ function resolveUpstreamPath(pathname) {
 }
 
 export default {
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
     const { pathname } = new URL(request.url);
     const origin = request.headers.get('Origin');
     const upstreamPath = resolveUpstreamPath(pathname);
@@ -87,6 +87,10 @@ export default {
       return jsonResponse({ error: 'API proxy is not configured.' }, 503, origin);
     }
 
+    const key = new Request(new URL(pathname, request.url).href);
+    const cached = await caches.default.match(key);
+    if (cached) return cached;
+
     const upstreamUrl = `${API_BASE_URL}/${encodeURIComponent(env.SUPERHERO_API_TOKEN)}/${upstreamPath}`;
 
     try {
@@ -97,7 +101,12 @@ export default {
       });
       const payload = await upstreamResponse.json();
 
-      return jsonResponse(payload, upstreamResponse.ok ? 200 : upstreamResponse.status, origin);
+      const response = jsonResponse(payload, upstreamResponse.status, origin);
+      if (upstreamResponse.ok && payload.response === 'success') {
+        response.headers.set('Cache-Control', 'public, max-age=300, s-maxage=3600');
+        ctx.waitUntil(caches.default.put(key, response.clone()).catch(() => {}));
+      }
+      return response;
     } catch {
       return jsonResponse({ error: 'SuperHero API is unavailable.' }, 502, origin);
     }
